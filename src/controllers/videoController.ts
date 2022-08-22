@@ -10,24 +10,78 @@ export const home = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export const see = (req: Request, res: Response, next: NextFunction) => {
-  return res.send(`watch ${req.params.id} #`);
-};
-
-export const upload = (req: Request, res: Response, next: NextFunction) => {
-  return res.send("upload");
-};
-
-export const deleteVideo = (
+export const watch = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  console.log("delete video");
+  const { id } = req.params;
+  const video = await Video.findById(id);
+  if (video) {
+    return res.json({ ok: true, video });
+  }
+  return res.status(404).json({ ok: false, error: "Video is not found" });
 };
 
-export const edit = (req: Request, res: Response, next: NextFunction) => {
-  return res.send("edit video");
+export const upload = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { title, description, hashtags } = req.body;
+
+  try {
+    await Video.create({
+      title,
+      description,
+      hashtags: Video.formatHashtags(hashtags) as any,
+      createAt: Date.now(),
+      meta: {
+        views: 0,
+        rating: 0,
+      },
+    });
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    return res.send({ ok: false, error });
+  }
+};
+
+export const deleteVideo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  try {
+    const video = await Video.exists({ _id: id });
+    if (!video) {
+      return res.status(404).json({ ok: false, error: "Video is not found" });
+    }
+    await Video.findByIdAndDelete(id);
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    return res.json({ ok: false, error });
+  }
+};
+
+export const edit = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const { title, description, hashtags } = req.body;
+  const video = await Video.exists({ _id: id });
+  if (!video) {
+    return res.status(404).json({ ok: false, error: "Video is not found" });
+  }
+  try {
+    await Video.findByIdAndUpdate(id, {
+      title,
+      description,
+      hashtags: Video.formatHashtags(hashtags),
+    });
+    return res.json({ ok: true });
+  } catch (error) {
+    return res.json({ ok: false, error });
+  }
 };
 
 export const search = (req: Request, res: Response, next: NextFunction) => {

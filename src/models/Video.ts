@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
+import { model, Schema, Model } from "mongoose";
 
 interface VideoSchema {
   title: string;
   description: string;
-  createAt: string;
+  createAt: Date;
   hashtags: string[];
   meta: {
     views: number;
@@ -11,17 +11,27 @@ interface VideoSchema {
   };
 }
 
-const videoSchema = new mongoose.Schema<VideoSchema>({
-  title: String,
-  description: String,
-  createAt: Date,
-  hashtags: [{ type: String }],
+interface VideoModelMethod extends Model<VideoSchema> {
+  formatHashtags: (hashtags: string) => string[];
+}
+
+const videoSchema = new Schema<VideoSchema, VideoModelMethod>({
+  title: { type: String, required: true, trim: true, maxLength: 80 },
+  description: { type: String, trim: true },
+  createAt: { type: Date, required: true, default: Date.now() },
+  hashtags: [{ type: String, trim: true }],
   meta: {
-    views: Number,
-    rating: Number,
+    views: { type: Number, default: 0 },
+    rating: { type: Number, default: 0 },
   },
 });
 
-const Video = mongoose.model<VideoSchema>("Video", videoSchema);
+videoSchema.static("formatHashtags", function formatHashtags(hashtags: string) {
+  return hashtags
+    .split(",")
+    .map((word) => (word.startsWith("#") ? word : `#${word}`));
+});
+
+const Video = model<VideoSchema, VideoModelMethod>("Video", videoSchema);
 
 export default Video;

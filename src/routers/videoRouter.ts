@@ -1,12 +1,17 @@
-import express, { NextFunction, Request, Response } from "express";
-import { deleteVideo, edit, see, upload } from "../controllers/videoController";
+import express from "express";
+import {
+  deleteVideo,
+  edit,
+  watch,
+  upload,
+} from "../controllers/videoController";
 
 const videoRouter = express.Router();
 
-videoRouter.get("/upload", upload);
-videoRouter.get("/:id(\\d+)", see);
+videoRouter.get("/:id([0-9a-f]{24})", watch);
 
-videoRouter.get("/:id(\\d+)/edit", edit);
-videoRouter.get("/:id(\\d+)/delete", deleteVideo);
+videoRouter.post("/:id([0-9a-f]{24})/delete", deleteVideo);
+videoRouter.post("/:id([0-9a-f]{24})/edit", edit);
+videoRouter.post("/upload", upload);
 
 export default videoRouter;
