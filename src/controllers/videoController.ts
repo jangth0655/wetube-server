@@ -3,7 +3,7 @@ import Video from "../models/Video";
 
 export const home = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const videos = await Video.find({});
+    const videos = await Video.find({}).sort({ createdAt: "desc" });
     return res.json({ ok: true, videos });
   } catch (error) {
     return res.status(404).json({ ok: false, error });
@@ -84,6 +84,19 @@ export const edit = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export const search = (req: Request, res: Response, next: NextFunction) => {
-  res.send("send");
+export const search = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { keyword } = req.query;
+  if (keyword) {
+    const videos = await Video.find({
+      title: {
+        $regex: new RegExp(`^${keyword}`, "i"),
+      },
+    });
+    return res.json({ ok: true, videos });
+  }
+  return res.json({ ok: true, message: "Keyword is not provided" });
 };
