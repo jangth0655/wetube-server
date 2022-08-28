@@ -4,7 +4,7 @@ import Video from "../models/Video";
 export const home = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const videos = await Video.find({}).sort({ createdAt: "desc" });
-    return res.json({ ok: true, videos });
+    return res.status(200).json({ ok: true, videos });
   } catch (error) {
     return res.status(404).json({ ok: false, error });
   }
@@ -43,7 +43,7 @@ export const upload = async (
     });
     return res.status(201).json({ ok: true });
   } catch (error) {
-    return res.send({ ok: false, error });
+    return res.status(400).json({ ok: false, error });
   }
 };
 
