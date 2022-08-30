@@ -1,5 +1,6 @@
-import { model, Schema, Model } from "mongoose";
+import { model, Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
+import Video, { VideoSchema } from "./Video";
 
 interface UserSchema {
   email: string;
@@ -8,7 +9,8 @@ interface UserSchema {
   name: string;
   location: string;
   socialOnly: boolean;
-  avatarUrl: string;
+  avatarId: string;
+  videos: VideoSchema[];
 }
 
 const userSchema = new Schema<UserSchema>({
@@ -18,12 +20,25 @@ const userSchema = new Schema<UserSchema>({
   name: { type: String, require: true, trim: true },
   location: { type: String, trim: true },
   socialOnly: { type: Boolean, default: false },
-  avatarUrl: { type: String },
+  avatarId: { type: String },
+  videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
 });
 
 userSchema.pre("save", async function () {
-  this.password = await bcrypt.hash(this.password, 5);
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 5);
+  }
 });
+
+userSchema.pre<any>(
+  "deleteOne",
+  { document: false, query: true },
+  async function (next) {
+    const { _id } = this.getFilter();
+    await Video.deleteMany({ user: _id });
+    next();
+  }
+);
 
 const User = model("User", userSchema);
 

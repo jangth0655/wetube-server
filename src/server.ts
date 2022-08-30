@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import session from "express-session";
 import MongoStore from "connect-mongo";
@@ -20,6 +20,10 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
   })
 );
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  next();
+});
 
 app.use("/", rootRouter);
 app.use("/videos", videoRouter);

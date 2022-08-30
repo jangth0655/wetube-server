@@ -1,3 +1,4 @@
+import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const protectorMiddleware = (
@@ -6,7 +7,7 @@ export const protectorMiddleware = (
   next: NextFunction
 ) => {
   try {
-    if (req.session.loggedIn) {
+    if (req.session.loggedIn && req.session.user) {
       next();
     } else {
       return res.status(401).json({ ok: false, error: "Please Login" });
@@ -24,4 +25,15 @@ export const publicOnlyMiddleware = (
   if (!req.session.loggedIn) {
     return next();
   }
+};
+
+export const checkSocialLogin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.session.user?.socialOnly) {
+    return res.json({ ok: false, socialOnly: req.session.user?.socialOnly });
+  }
+  return next();
 };

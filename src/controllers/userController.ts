@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { NextFunction, query, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import User from "../models/User";
 import { URLSearchParams } from "url";
 import fetch from "node-fetch";
@@ -42,39 +42,55 @@ export const login = async (
   next: NextFunction
 ) => {
   const { username, password } = req.body;
+
   const user = await User.findOne({ username, socialOnly: false });
   if (!user) {
     return res.status(400).json({ ok: false, error: "User is not found." });
   }
-
   if (user.socialOnly) {
     return res.json({ ok: false, error: "깃헙으로 로그인하세요." });
   }
-
   const passwordOk = await bcrypt.compare(password, user.password);
   if (!passwordOk) {
-    return res.status(400).json({ ok: false, error: "Incorrect info." });
+    return res
+      .status(400)
+      .json({ ok: false, error: "Password or Username is incorrect." });
   }
   const loggedIn = (req.session.loggedIn = true);
   req.session.user = user;
+
   res.status(201).json({ ok: true, loggedIn });
 };
 
 export const logout = (req: Request, res: Response, next: NextFunction) => {
-  req.session.destroy((error) => {});
-  res.clearCookie("connect.sid");
+  req.session.destroy((error) => {
+    console.error;
+  });
   res.json({ ok: true });
 };
 
-export const see = (req: Request, res: Response, next: NextFunction) => {
-  res.send("see user");
+export const see = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id).populate("videos");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ ok: false, error: "Could not found user." });
+    }
+    return res.status(200).json({ ok: true, user });
+  } catch (error) {
+    return res.status(404).json({ ok: false, error: `error : ${error}` });
+  }
 };
 
 export const edit = async (req: Request, res: Response, next: NextFunction) => {
   const {
-    body: { name, email, username, location },
+    body: { name, email, username, location, avatarId },
+    session: {
+      user: { _id },
+    },
   } = req;
-  const id = req.session.user?._id;
 
   try {
     const existUser = await User.findOne({
@@ -86,7 +102,7 @@ export const edit = async (req: Request, res: Response, next: NextFunction) => {
         return res.json({ ok: false, error: "Username is already taken." });
       }
       const updatedUser = await User.findByIdAndUpdate(
-        id,
+        _id,
         { username },
         {
           new: true,
@@ -100,15 +116,22 @@ export const edit = async (req: Request, res: Response, next: NextFunction) => {
         return res.json({ ok: false, error: "Email is already taken." });
       }
       const updatedUser = await User.findByIdAndUpdate(
-        id,
+        _id,
         { email },
         { new: true }
       );
       req.session.user = updatedUser;
     }
 
+    if (avatarId && avatarId !== req.session.user.avatarId) {
+      const updatedUser = await User.findByIdAndUpdate(_id, {
+        avatarId,
+      });
+      req.session.user = updatedUser;
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
-      id,
+      _id,
       {
         name,
         location,
@@ -120,6 +143,42 @@ export const edit = async (req: Request, res: Response, next: NextFunction) => {
   } catch (e) {
     return res.status(400).json({ ok: false, error: `${e}` });
   }
+};
+
+export const changePassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    body: { currentPassword, newPassword, confirmNewPassword },
+    session: {
+      user: { _id, password },
+    },
+  } = req;
+
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({
+      ok: false,
+      error: "The password does not match the confirmation",
+    });
+  }
+  try {
+    const ok = await bcrypt.compare(currentPassword, password);
+    if (!ok) {
+      return res.json({
+        ok: false,
+        error: "The current password is incorrect.",
+      });
+    }
+    const user = await User.findById(_id);
+    user ? (user.password = newPassword) : null;
+    user?.save();
+    req.session.user.password = user?.password;
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: `${error}` });
+  }
+  return res.status(201).json({ ok: true });
 };
 
 export const remove = (req: Request, res: Response, next: NextFunction) => {
