@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 
 declare module "express-session" {
   export interface SessionData {
-    user: DocumentType<User> | null;
+    user: DocumentType<any> | null;
     loggedIn: boolean;
   }
 }

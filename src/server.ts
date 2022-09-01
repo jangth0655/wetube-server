@@ -1,7 +1,8 @@
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import morgan from "morgan";
 import session from "express-session";
 import MongoStore from "connect-mongo";
+import cors from "cors";
 
 import rootRouter from "./routers/rootRouter";
 import userRouter from "./routers/userRouter";
@@ -9,21 +10,34 @@ import videoRouter from "./routers/videoRouter";
 
 const app = express();
 
+app.use(
+  cors({
+    credentials: true,
+    origin: "http://localhost:3000/",
+  })
+);
+
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    credentials: true,
+    origin: "http://localhost:3000",
+  })
+);
 app.use(
   session({
     secret: process.env.COOKIE_SECRET!,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
+    cookie: {
+      secure: app.get("env") === "production" ? true : false,
+      sameSite: "none",
+    },
   })
 );
-
-app.use((req: Request, res: Response, next: NextFunction) => {
-  next();
-});
 
 app.use("/", rootRouter);
 app.use("/videos", videoRouter);

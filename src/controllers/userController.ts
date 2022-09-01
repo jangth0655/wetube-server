@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import User from "../models/User";
-import { URLSearchParams } from "url";
 import fetch from "node-fetch";
 
 export const join = async (req: Request, res: Response, next: NextFunction) => {
@@ -56,10 +55,9 @@ export const login = async (
       .status(400)
       .json({ ok: false, error: "Password or Username is incorrect." });
   }
-  const loggedIn = (req.session.loggedIn = true);
+  req.session.loggedIn = true;
   req.session.user = user;
-
-  res.status(201).json({ ok: true, loggedIn });
+  res.status(201).json({ ok: true, loggedIn: req.session.loggedIn });
 };
 
 export const logout = (req: Request, res: Response, next: NextFunction) => {
@@ -267,5 +265,25 @@ export const finishGithubLogin = async (
   } catch (error) {
     console.error;
     return res.json({ ok: false, error });
+  }
+};
+
+export const me = async (req: Request, res: Response, next: NextFunction) => {
+  const {
+    session: {
+      user: { _id },
+    },
+  } = req;
+
+  try {
+    const user = await User.findById(_id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ ok: false, error: "Could not found user." });
+    }
+    return res.status(200).json({ ok: true, user });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: `Error: ${error}` });
   }
 };

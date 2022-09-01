@@ -1,4 +1,5 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, query, Request, Response } from "express";
+import Comment from "../models/Comment";
 import User from "../models/User";
 import Video from "../models/Video";
 
@@ -18,7 +19,9 @@ export const watch = async (
 ) => {
   const { id } = req.params;
   try {
-    const video = await Video.findById(id).populate("user");
+    const video = await Video.findById(id)
+      .populate("user")
+      .populate("comments");
     if (video) {
       return res.json({ ok: true, video });
     }
@@ -54,7 +57,6 @@ export const upload = async (
     const user = await User.findById(userId);
     user?.videos.push(newVideo._id);
     await user?.save();
-    console.log(user?.videos);
     return res.status(201).json({ ok: true });
   } catch (error) {
     return res.status(400).json({ ok: false, error });
@@ -127,4 +129,67 @@ export const search = async (
     return res.json({ ok: true, videos });
   }
   return res.json({ ok: true, message: "Keyword is not provided" });
+};
+
+export const createComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    body: { text },
+    params: { id },
+    session: { user },
+  } = req;
+
+  try {
+    const video = await Video.findById(id);
+    const currentUser = await User.findById(user._id);
+    if (!video) {
+      return res
+        .status(401)
+        .json({ ok: false, error: "Could not found video." });
+    }
+    video.meta.views = video.meta.views + 1;
+    const comment = await Comment.create({
+      text,
+      user: user._id,
+      video: id,
+    });
+    video.comments.push(comment._id);
+    await video.save();
+    return res.status(201).json({ ok: true, comment });
+  } catch (e) {
+    return res.json(401).json({ ok: false, error: `error: ${e}` });
+  }
+};
+
+export const deleteComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    params: { id },
+    query: { commentId },
+    session: { user },
+  } = req;
+  try {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res
+        .status(404)
+        .json({ ok: false, error: "Could not find comment." });
+    }
+    if (String(comment.user) !== String(user._id)) {
+      return res.status(403).json({ ok: false, error: "Not authorized." });
+    }
+    await Comment.deleteOne({ _id: commentId });
+    const video = await Video.findById(id);
+    video?.comments.splice(video.comments.indexOf(comment._id), 1);
+    await video?.save();
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: `Error :${error}.` });
+  }
 };

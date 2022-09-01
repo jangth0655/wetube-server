@@ -1,4 +1,5 @@
 import { model, Schema, Model } from "mongoose";
+import { CommentSchema } from "./Comment";
 
 export interface VideoSchema {
   _id: any;
@@ -12,6 +13,7 @@ export interface VideoSchema {
     rating: number;
   };
   user: Schema.Types.ObjectId;
+  comments: CommentSchema[];
 }
 
 interface VideoModelMethod extends Model<VideoSchema> {
@@ -29,6 +31,7 @@ const videoSchema = new Schema<VideoSchema, VideoModelMethod>({
     rating: { type: Number, default: 0 },
   },
   user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 videoSchema.static("formatHashtags", function formatHashtags(hashtags: string) {

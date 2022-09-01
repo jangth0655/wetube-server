@@ -1,4 +1,5 @@
-import { model, Schema, Document } from "mongoose";
+import { CommentSchema } from "./Comment";
+import { model, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import Video, { VideoSchema } from "./Video";
 
@@ -11,6 +12,7 @@ interface UserSchema {
   socialOnly: boolean;
   avatarId: string;
   videos: VideoSchema[];
+  comments: CommentSchema[];
 }
 
 const userSchema = new Schema<UserSchema>({
@@ -22,6 +24,7 @@ const userSchema = new Schema<UserSchema>({
   socialOnly: { type: Boolean, default: false },
   avatarId: { type: String },
   videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 userSchema.pre("save", async function () {

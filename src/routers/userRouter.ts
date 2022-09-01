@@ -3,6 +3,7 @@ import {
   changePassword,
   edit,
   finishGithubLogin,
+  me,
   remove,
   see,
   startGithubLogin,
@@ -15,6 +16,7 @@ import {
 
 const userRouter = express.Router();
 
+userRouter.get("/me", protectorMiddleware, me);
 userRouter.get("/github/start", publicOnlyMiddleware, startGithubLogin);
 userRouter.get("/github/finish", publicOnlyMiddleware, finishGithubLogin);
 userRouter.post("/:id/edit", protectorMiddleware, edit);
@@ -25,6 +27,6 @@ userRouter.post(
   changePassword
 );
 userRouter.get("/:id/delete", protectorMiddleware, remove);
-userRouter.get("/:id/", see);
+userRouter.get("/:id/", publicOnlyMiddleware, see);
 
 export default userRouter;
