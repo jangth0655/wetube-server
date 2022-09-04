@@ -1,4 +1,4 @@
-import { NextFunction, query, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import Comment from "../models/Comment";
 import User from "../models/User";
 import Video from "../models/Video";
