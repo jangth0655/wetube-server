@@ -12,6 +12,7 @@ import videoRouter from "./routers/videoRouter";
 const app = express();
 
 app.use(cookieParser());
+
 const corsOptions = {
   credentials: true,
   origin: true,
@@ -33,8 +34,8 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  //req.session.potato = "server";
-  next();
+  //console.log("server", req.session);
+  next(); // dont forget this
 });
 
 app.use("/", rootRouter);

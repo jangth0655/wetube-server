@@ -2,11 +2,9 @@ import express from "express";
 import {
   changePassword,
   edit,
-  finishGithubLogin,
   me,
   remove,
   see,
-  startGithubLogin,
 } from "../controllers/userController";
 import {
   checkSocialLogin,
@@ -16,8 +14,6 @@ import {
 
 const userRouter = express.Router();
 
-userRouter.get("/github/start", publicOnlyMiddleware, startGithubLogin);
-userRouter.get("/github/finish", publicOnlyMiddleware, finishGithubLogin);
 userRouter.get("/me", protectorMiddleware, me);
 userRouter.post("/:id/edit", protectorMiddleware, edit);
 userRouter.post(
