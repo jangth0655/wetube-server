@@ -5,5 +5,6 @@ declare module "express-session" {
   export interface SessionData {
     user: DocumentType<any> | null;
     loggedIn: boolean;
+    [key: string]: any;
   }
 }

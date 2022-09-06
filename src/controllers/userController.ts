@@ -25,14 +25,18 @@ export const join = async (req: Request, res: Response, next: NextFunction) => {
   if (existUser) {
     return res.status(400).json({ ok: false, error: "User already taken" });
   }
-  await User.create({
-    email,
-    username,
-    password,
-    name,
-    location,
-  });
-  return res.status(201).json({ ok: true });
+  try {
+    await User.create({
+      email,
+      username,
+      password,
+      name,
+      location,
+    });
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    return res.status(401).json({ ok: false, error });
+  }
 };
 
 export const login = async (
@@ -41,7 +45,6 @@ export const login = async (
   next: NextFunction
 ) => {
   const { username, password } = req.body;
-
   const user = await User.findOne({ username, socialOnly: false });
   if (!user) {
     return res.status(400).json({ ok: false, error: "User is not found." });
@@ -55,8 +58,12 @@ export const login = async (
       .status(400)
       .json({ ok: false, error: "Password or Username is incorrect." });
   }
+
   req.session.loggedIn = true;
   req.session.user = user;
+  req.session.save((error) => {
+    if (error) res.json({ ok: false, error: "session not saved" });
+  });
   res.status(201).json({ ok: true, loggedIn: req.session.loggedIn });
 };
 

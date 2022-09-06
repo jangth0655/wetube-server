@@ -1,4 +1,3 @@
-import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const protectorMiddleware = (
@@ -10,7 +9,7 @@ export const protectorMiddleware = (
     if (req.session.loggedIn && req.session.user) {
       next();
     } else {
-      return res.status(401).json({ ok: false, error: "Please Login" });
+      return res.json({ ok: false, error: "Please Login" });
     }
   } catch (e) {
     return res.status(500).json({ ok: false, error: `Server Error : ${e}.` });

@@ -16,9 +16,9 @@ import {
 
 const userRouter = express.Router();
 
-userRouter.get("/me", protectorMiddleware, me);
 userRouter.get("/github/start", publicOnlyMiddleware, startGithubLogin);
 userRouter.get("/github/finish", publicOnlyMiddleware, finishGithubLogin);
+userRouter.get("/me", protectorMiddleware, me);
 userRouter.post("/:id/edit", protectorMiddleware, edit);
 userRouter.post(
   "/:id/edit/change-password",
