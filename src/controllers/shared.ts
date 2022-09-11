@@ -1,25 +1,18 @@
-import axios from "axios";
-import { Request, Response, NextFunction } from "express";
+import AWS from "aws-sdk";
 
-export const uploadUrl = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+AWS.config.update({
+  credentials: {
+    accessKeyId: process.env.AWS_ID!,
+    secretAccessKey: process.env.AWS_SECRET!,
+  },
+});
+
+export const UploadToS3 = async (
+  uploadFile: any,
+  userId: string,
+  foldName: string
 ) => {
-  try {
-    const response = await (
-      await axios({
-        /*    method: "POST",
-        url: `https://api.cloudflare.com/client/v4/accounts/${process.env.CL_ACCOUNTID}/images/v2/direct_upload`,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.CL_TOKEN}`,
-        }, */
-      })
-    ).data;
-
-    return res.status(201).json({ ok: true, ...response.result });
-  } catch (e) {
-    return res.status(500).json({ ok: false, error: `CF Error ,${e}` });
-  }
+  const { filename, createReadSteam } = await uploadFile;
+  console.log(filename);
+  console.log(createReadSteam);
 };

@@ -37,13 +37,13 @@ export const upload = async (
   next: NextFunction
 ) => {
   const {
-    body: { title, description, hashtags, url },
+    body: { title, description, hashtags, file },
     session: { user },
   } = req;
   const userId = user._id;
   try {
     const newVideo = await Video.create({
-      url: url ? url : null,
+      url: file ? file : null,
       title,
       description,
       hashtags: Video.formatHashtags(hashtags) as any,
@@ -192,4 +192,16 @@ export const deleteComment = async (
   } catch (error) {
     return res.status(400).json({ ok: false, error: `Error :${error}.` });
   }
+};
+
+export const awsVideoUpload = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { file } = req;
+  if (!file) {
+    return res.json({ ok: false, error: "Video not found." });
+  }
+  return res.json({ ok: true, file });
 };

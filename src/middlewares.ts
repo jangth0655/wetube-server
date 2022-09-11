@@ -1,4 +1,7 @@
 import { NextFunction, Request, Response } from "express";
+import multer from "multer";
+import multerS3 from "multer-s3";
+import { S3Client } from "@aws-sdk/client-s3";
 
 export const protectorMiddleware = (
   req: Request,
@@ -36,3 +39,33 @@ export const checkSocialLogin = (
   }
   return next();
 };
+
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: process.env.AWS_ID!,
+    secretAccessKey: process.env.AWS_SECRET!,
+  },
+  region: process.env.AWS_REGION,
+});
+
+const multerUpload = multerS3({
+  s3,
+  bucket: "wetube-upload",
+  key: function (req, file, cb) {
+    cb(
+      null,
+      "upload/" +
+        `${file.mimetype.split("/")[0]}_` +
+        `${req.session.user.username}_` +
+        Date.now()
+    );
+  },
+});
+
+export const imageUpload = multer({
+  storage: multerUpload,
+}).single("avatar");
+
+export const videoUpload = multer({
+  storage: multerUpload,
+}).single("file");

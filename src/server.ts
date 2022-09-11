@@ -4,6 +4,7 @@ import morgan from "morgan";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
 
 import rootRouter from "./routers/rootRouter";
 import userRouter from "./routers/userRouter";

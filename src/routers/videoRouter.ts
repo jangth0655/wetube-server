@@ -6,8 +6,9 @@ import {
   upload,
   createComment,
   deleteComment,
+  awsVideoUpload,
 } from "../controllers/videoController";
-import { protectorMiddleware } from "../middlewares";
+import { protectorMiddleware, videoUpload } from "../middlewares";
 
 const videoRouter = express.Router();
 
@@ -21,6 +22,7 @@ videoRouter.post(
   createComment
 );
 videoRouter.post("/:id([0-9a-f]{24})", protectorMiddleware, deleteComment);
-videoRouter.post("/upload", protectorMiddleware, upload);
+videoRouter.post("/upload", upload);
+videoRouter.post("/awsUpload", videoUpload, awsVideoUpload);
 
 export default videoRouter;
