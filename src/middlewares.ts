@@ -52,20 +52,24 @@ const multerUpload = multerS3({
   s3,
   bucket: "wetube-upload",
   key: function (req, file, cb) {
-    cb(
-      null,
-      "upload/" +
-        `${file.mimetype.split("/")[0]}_` +
-        `${req.session.user.username}_` +
-        Date.now()
-    );
+    let uniqFileName = `upload/${file.mimetype.split("/")[0]}_${
+      req.session.user.username
+    }_${Date.now()}.mp4`;
+    cb(null, uniqFileName);
   },
+  acl: "public-read",
 });
 
 export const imageUpload = multer({
   storage: multerUpload,
+  limits: {
+    fileSize: 3000,
+  },
 }).single("avatar");
 
 export const videoUpload = multer({
   storage: multerUpload,
+  limits: {
+    fileSize: 10000000,
+  },
 }).single("file");

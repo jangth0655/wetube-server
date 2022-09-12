@@ -57,7 +57,7 @@ export const upload = async (
     const user = await User.findById(userId);
     user?.videos.push(newVideo._id);
     await user?.save();
-    return res.status(201).json({ ok: true });
+    return res.status(201).json({ ok: true, file });
   } catch (error) {
     return res.status(400).json({ ok: false, error });
   }
