@@ -2,10 +2,20 @@ import { NextFunction, Request, Response } from "express";
 import Comment from "../models/Comment";
 import User from "../models/User";
 import Video from "../models/Video";
+import { deleteToS3 } from "./shared";
 
 export const home = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const videos = await Video.find({}).sort({ createdAt: "desc" });
+    const videos = await Video.find({})
+      .sort({ createdAt: "desc" })
+      .populate({
+        path: "user",
+        select: {
+          username: 1,
+          avatarId: 1,
+        },
+      });
+
     return res.status(200).json({ ok: true, videos });
   } catch (error) {
     return res.status(404).json({ ok: false, error });
@@ -20,8 +30,23 @@ export const watch = async (
   const { id } = req.params;
   try {
     const video = await Video.findById(id)
-      .populate("user")
-      .populate("comments");
+      .populate({
+        path: "user",
+        select: {
+          username: 1,
+          avatarId: 1,
+        },
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          select: {
+            username: 1,
+            avatarId: 1,
+          },
+        },
+      });
     if (video) {
       return res.json({ ok: true, video });
     }
@@ -48,10 +73,6 @@ export const upload = async (
       description,
       hashtags: Video.formatHashtags(hashtags) as any,
       createAt: Date.now(),
-      meta: {
-        views: 0,
-        rating: 0,
-      },
       user: userId,
     });
     const user = await User.findById(userId);
@@ -73,6 +94,7 @@ export const deleteVideo = async (
     session: {
       user: { _id },
     },
+    query: { file },
   } = req;
   try {
     const video = await Video.findById({ _id: id });
@@ -82,11 +104,14 @@ export const deleteVideo = async (
     if (String(video.user) !== String(_id)) {
       return res.status(403).json({ ok: false, error: "Not authorized." });
     }
-    await Video.deleteOne({ _id: video._id });
+    await deleteToS3(file);
+    return res.json({ ok: true });
+    /* await Video.deleteOne({ _id: video._id });
+
     const user = await User.findById(_id);
     user?.videos.splice(user.videos.indexOf(video._id), 1);
     await user?.save();
-    return res.status(201).json({ ok: true });
+    return res.status(201).json({ ok: true }); */
   } catch (error) {
     return res.json({ ok: false, error });
   }
@@ -150,13 +175,14 @@ export const createComment = async (
         .status(401)
         .json({ ok: false, error: "Could not found video." });
     }
-    video.meta.views = video.meta.views + 1;
+
     const comment = await Comment.create({
       text,
       user: user._id,
       video: id,
     });
     video.comments.push(comment._id);
+    await comment.save();
     await video.save();
     return res.status(201).json({ ok: true, comment });
   } catch (e) {

@@ -9,7 +9,6 @@ interface UserSchema {
   password: string;
   name: string;
   location: string;
-  socialOnly: boolean;
   avatarId: string;
   videos: VideoSchema[];
   comments: CommentSchema[];
@@ -21,7 +20,6 @@ const userSchema = new Schema<UserSchema>({
   password: { type: String, require: false },
   name: { type: String, require: true, trim: true },
   location: { type: String, trim: true },
-  socialOnly: { type: Boolean, default: false },
   avatarId: { type: String },
   videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
   comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],

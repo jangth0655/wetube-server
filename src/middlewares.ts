@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import multerS3 from "multer-s3";
 import { S3Client } from "@aws-sdk/client-s3";
+import AWS from "aws-sdk";
 
 export const protectorMiddleware = (
   req: Request,
@@ -54,7 +55,7 @@ const multerUpload = multerS3({
   key: function (req, file, cb) {
     let uniqFileName = `upload/${file.mimetype.split("/")[0]}_${
       req.session.user.username
-    }_${Date.now()}.mp4`;
+    }_${Date.now()}.*`;
     cb(null, uniqFileName);
   },
   acl: "public-read",

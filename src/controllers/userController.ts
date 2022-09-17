@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import User from "../models/User";
-import fetch from "node-fetch";
 
 export const join = async (req: Request, res: Response, next: NextFunction) => {
   const { email, username, password, confirmPassword, name, location } =
@@ -49,9 +48,7 @@ export const login = async (
   if (!user) {
     return res.status(400).json({ ok: false, error: "User is not found." });
   }
-  if (user.socialOnly) {
-    return res.json({ ok: false, error: "깃헙으로 로그인하세요." });
-  }
+
   const passwordOk = await bcrypt.compare(password, user.password);
   if (!passwordOk) {
     return res

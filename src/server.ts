@@ -34,9 +34,10 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  //console.log("server", req.session);
-  next(); // dont forget this
+app.use(function (req, res, next) {
+  res.header("Cross-Origin-Embedder-Policy", "require-corp");
+  res.header("Cross-Origin-Opener-Policy", "same-origin");
+  next();
 });
 
 app.use("/", rootRouter);
