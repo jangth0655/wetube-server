@@ -96,6 +96,7 @@ export const deleteVideo = async (
     },
     query: { file },
   } = req;
+
   try {
     const video = await Video.findById({ _id: id });
     if (!video) {
@@ -105,13 +106,12 @@ export const deleteVideo = async (
       return res.status(403).json({ ok: false, error: "Not authorized." });
     }
     await deleteToS3(file);
-    return res.json({ ok: true });
-    /* await Video.deleteOne({ _id: video._id });
+    await Video.deleteOne({ _id: video._id });
 
     const user = await User.findById(_id);
     user?.videos.splice(user.videos.indexOf(video._id), 1);
     await user?.save();
-    return res.status(201).json({ ok: true }); */
+    return res.status(201).json({ ok: true });
   } catch (error) {
     return res.json({ ok: false, error });
   }

@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  awsAvatarUpload,
   changePassword,
   edit,
   me,
@@ -7,7 +8,7 @@ import {
   see,
 } from "../controllers/userController";
 import {
-  checkSocialLogin,
+  imageUpload,
   protectorMiddleware,
   publicOnlyMiddleware,
 } from "../middlewares";
@@ -15,13 +16,9 @@ import {
 const userRouter = express.Router();
 
 userRouter.get("/me", protectorMiddleware, me);
+userRouter.post("/awsUpload", imageUpload, awsAvatarUpload);
 userRouter.post("/:id/edit", protectorMiddleware, edit);
-userRouter.post(
-  "/:id/edit/change-password",
-  protectorMiddleware,
-  checkSocialLogin,
-  changePassword
-);
+userRouter.post("/:id/change-password", protectorMiddleware, changePassword);
 userRouter.get("/:id/delete", protectorMiddleware, remove);
 userRouter.get("/:id/", publicOnlyMiddleware, see);
 

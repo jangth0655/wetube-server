@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import User from "../models/User";
+import { deleteToS3 } from "./shared";
 
 export const join = async (req: Request, res: Response, next: NextFunction) => {
   const { email, username, password, confirmPassword, name, location } =
@@ -44,24 +45,30 @@ export const login = async (
   next: NextFunction
 ) => {
   const { username, password } = req.body;
-  const user = await User.findOne({ username, socialOnly: false });
-  if (!user) {
-    return res.status(400).json({ ok: false, error: "User is not found." });
-  }
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.json({ ok: false, error: "User is not found." });
+    }
 
-  const passwordOk = await bcrypt.compare(password, user.password);
-  if (!passwordOk) {
-    return res
-      .status(400)
-      .json({ ok: false, error: "Password or Username is incorrect." });
-  }
+    const passwordOk = await bcrypt.compare(password, user.password);
 
-  req.session.loggedIn = true;
-  req.session.user = user;
-  req.session.save((error) => {
-    if (error) res.json({ ok: false, error: "session not saved" });
-  });
-  res.status(201).json({ ok: true, loggedIn: req.session.loggedIn });
+    if (!passwordOk) {
+      return res.json({
+        ok: false,
+        error: "Password or Username is incorrect.",
+      });
+    }
+
+    req.session.loggedIn = true;
+    req.session.user = user;
+    req.session.save((error) => {
+      if (error) res.json({ ok: false, error: "session not saved" });
+    });
+    res.status(201).json({ ok: true, loggedIn: req.session.loggedIn });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error });
+  }
 };
 
 export const logout = (req: Request, res: Response, next: NextFunction) => {
@@ -126,6 +133,11 @@ export const edit = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     if (avatarId && avatarId !== req.session.user.avatarId) {
+      console.log("avatarid", avatarId);
+      console.log("current", req.session.user.avatarId);
+      if (req.session.user.avatarId) {
+        await deleteToS3(req.session.user.avatarId);
+      }
       const updatedUser = await User.findByIdAndUpdate(_id, {
         avatarId,
       });
@@ -177,10 +189,10 @@ export const changePassword = async (
     user ? (user.password = newPassword) : null;
     user?.save();
     req.session.user.password = user?.password;
+    return res.status(201).json({ ok: true });
   } catch (error) {
     return res.status(400).json({ ok: false, error: `${error}` });
   }
-  return res.status(201).json({ ok: true });
 };
 
 export const remove = (req: Request, res: Response, next: NextFunction) => {
@@ -195,7 +207,13 @@ export const me = async (req: Request, res: Response, next: NextFunction) => {
   } = req;
 
   try {
-    const user = await User.findById(_id);
+    const user = await User.findById(_id).populate({
+      path: "videos",
+      select: {
+        url: 1,
+        title: 1,
+      },
+    });
     if (!user) {
       return res
         .status(404)
@@ -205,4 +223,17 @@ export const me = async (req: Request, res: Response, next: NextFunction) => {
   } catch (error) {
     return res.status(400).json({ ok: false, error: `Error: ${error}` });
   }
+};
+
+export const awsAvatarUpload = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { file } = req;
+
+  if (!file) {
+    return res.json({ ok: false, error: "Video not found." });
+  }
+  return res.json({ ok: true, file });
 };

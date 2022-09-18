@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import multerS3 from "multer-s3";
 import { S3Client } from "@aws-sdk/client-s3";
-import AWS from "aws-sdk";
 
 export const protectorMiddleware = (
   req: Request,
@@ -30,17 +29,6 @@ export const publicOnlyMiddleware = (
   }
 };
 
-export const checkSocialLogin = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (req.session.user?.socialOnly) {
-    return res.json({ ok: false, socialOnly: req.session.user?.socialOnly });
-  }
-  return next();
-};
-
 const s3 = new S3Client({
   credentials: {
     accessKeyId: process.env.AWS_ID!,
@@ -64,9 +52,9 @@ const multerUpload = multerS3({
 export const imageUpload = multer({
   storage: multerUpload,
   limits: {
-    fileSize: 3000,
+    fileSize: 10000000,
   },
-}).single("avatar");
+}).single("file");
 
 export const videoUpload = multer({
   storage: multerUpload,
