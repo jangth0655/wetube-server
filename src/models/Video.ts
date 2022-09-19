@@ -22,7 +22,6 @@ const videoSchema = new Schema<VideoSchema, VideoModelMethod>({
   description: { type: String, trim: true },
   createAt: { type: Date, required: true, default: Date.now() },
   hashtags: [{ type: String, trim: true }],
-
   user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
   comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });

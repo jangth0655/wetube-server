@@ -49,16 +49,44 @@ const multerUpload = multerS3({
   acl: "public-read",
 });
 
-export const imageUpload = multer({
+const imageUpload = multer({
   storage: multerUpload,
   limits: {
     fileSize: 10000000,
   },
 }).single("file");
 
-export const videoUpload = multer({
+const videoUpload = multer({
   storage: multerUpload,
   limits: {
     fileSize: 10000000,
   },
 }).single("file");
+
+export const imageUploadFn = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  imageUpload(req, res, function (err) {
+    if (err) {
+      console.log(err.message);
+      return res.json({ error: err.message });
+    }
+    next();
+  });
+};
+
+export const videoUploadFn = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  videoUpload(req, res, function (err) {
+    if (err) {
+      console.log(err.message);
+      return res.json({ error: err.message });
+    }
+    next();
+  });
+};

@@ -8,7 +8,7 @@ import {
   see,
 } from "../controllers/userController";
 import {
-  imageUpload,
+  imageUploadFn,
   protectorMiddleware,
   publicOnlyMiddleware,
 } from "../middlewares";
@@ -16,7 +16,7 @@ import {
 const userRouter = express.Router();
 
 userRouter.get("/me", protectorMiddleware, me);
-userRouter.post("/awsUpload", imageUpload, awsAvatarUpload);
+userRouter.post("/awsUpload", imageUploadFn, awsAvatarUpload);
 userRouter.post("/:id/edit", protectorMiddleware, edit);
 userRouter.post("/:id/change-password", protectorMiddleware, changePassword);
 userRouter.get("/:id/delete", protectorMiddleware, remove);

@@ -144,11 +144,18 @@ export const search = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { keyword } = req.query;
+  const { keyword } = req.params;
+  console.log(keyword);
   if (keyword) {
     const videos = await Video.find({
       title: {
         $regex: new RegExp(`^${keyword}`, "i"),
+      },
+    }).populate({
+      path: "user",
+      select: {
+        username: 1,
+        avatarId: 1,
       },
     });
     return res.json({ ok: true, videos });
@@ -220,11 +227,7 @@ export const deleteComment = async (
   }
 };
 
-export const awsVideoUpload = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const awsVideoUpload = (req: Request, res: Response) => {
   const { file } = req;
   if (!file) {
     return res.json({ ok: false, error: "Video not found." });
