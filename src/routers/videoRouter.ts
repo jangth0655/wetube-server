@@ -8,6 +8,7 @@ import {
   deleteComment,
   awsVideoUpload,
   search,
+  increaseView,
 } from "../controllers/videoController";
 import { protectorMiddleware, videoUploadFn } from "../middlewares";
 
@@ -24,7 +25,10 @@ videoRouter.post(
   createComment
 );
 
+videoRouter.post("/:id([0-9a-f]{24})/view", increaseView);
+
 videoRouter.post("/:id([0-9a-f]{24})", protectorMiddleware, deleteComment);
+
 videoRouter.post("/upload", upload);
 videoRouter.post("/awsUpload", videoUploadFn, awsVideoUpload);
 videoRouter.post("/search/:keyword", search);

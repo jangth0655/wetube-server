@@ -234,3 +234,28 @@ export const awsVideoUpload = (req: Request, res: Response) => {
   }
   return res.json({ ok: true, file });
 };
+
+export const increaseView = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<Response> => {
+  const {
+    params: { id },
+  } = req;
+
+  try {
+    const foundVideo = await Video.findById(id);
+    if (!foundVideo) {
+      return res.json({ ok: false, error: "Not found video." });
+    }
+    const updatedVideo = await Video.findByIdAndUpdate(id, {
+      $set: { meta: { view: foundVideo.meta.view + 1 } },
+    });
+    console.log(updatedVideo);
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    console.log("increase view error");
+    return res.status(400).json({ ok: false, error: error });
+  }
+};

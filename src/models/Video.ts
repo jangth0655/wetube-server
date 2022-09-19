@@ -8,6 +8,9 @@ export interface VideoSchema {
   description: string;
   createAt: Date;
   hashtags: string[];
+  meta: {
+    view: number;
+  };
   user: Schema.Types.ObjectId;
   comments: CommentSchema[];
 }
@@ -23,6 +26,9 @@ const videoSchema = new Schema<VideoSchema, VideoModelMethod>({
   createAt: { type: Date, required: true, default: Date.now() },
   hashtags: [{ type: String, trim: true }],
   user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+  meta: {
+    view: { type: Number, required: true, default: 0 },
+  },
   comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
