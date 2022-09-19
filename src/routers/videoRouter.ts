@@ -27,7 +27,11 @@ videoRouter.post(
 
 videoRouter.post("/:id([0-9a-f]{24})/view", increaseView);
 
-videoRouter.post("/:id([0-9a-f]{24})", protectorMiddleware, deleteComment);
+videoRouter.post(
+  "/:id([0-9a-f]{24})/delete-comment",
+  protectorMiddleware,
+  deleteComment
+);
 
 videoRouter.post("/upload", upload);
 videoRouter.post("/awsUpload", videoUploadFn, awsVideoUpload);

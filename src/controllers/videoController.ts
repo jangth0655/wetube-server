@@ -207,6 +207,7 @@ export const deleteComment = async (
     query: { commentId },
     session: { user },
   } = req;
+
   try {
     const comment = await Comment.findById(commentId);
     if (!comment) {
