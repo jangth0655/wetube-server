@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "dev": "nodemon --exec ts-node src/init.ts",
-    "start": "node build/init.js"
+    "start": "node build/init.js",
+    "build": "npx tsc"
   },
   "keywords": [],
   "author": "",
