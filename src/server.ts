@@ -4,7 +4,6 @@ import morgan from "morgan";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
-import bodyParser from "body-parser";
 
 import rootRouter from "./routers/rootRouter";
 import userRouter from "./routers/userRouter";
@@ -16,7 +15,7 @@ app.use(cookieParser());
 
 const corsOptions = {
   credentials: true,
-  origin: true,
+  origin: process.env.CLIENT_URL,
 };
 
 app.use(cors(corsOptions));
@@ -24,6 +23,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(express.urlencoded({ extended: true }));
+app.set("trust proxy", 1);
 
 app.use(
   session({
@@ -31,6 +31,11 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.DB_URL! }),
+    cookie: {
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 8.64e7,
+      secure: process.env.NODE_ENV === "production",
+    },
   })
 );
 
