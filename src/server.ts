@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 const corsOptions = {
   credentials: true,
-  origin: process.env.CLIENT_URL,
+  origin: true,
 };
 
 app.use(cors(corsOptions));
@@ -48,10 +48,5 @@ app.use(function (req, res, next) {
 app.use("/", rootRouter);
 app.use("/videos", videoRouter);
 app.use("/users", userRouter);
-
-/* app.use("/*", (req: Request, res: Response, next: NextFunction) => {
-  console.log("error");
-  return res.status(404).json({ ok: false, error: "Not found" });
-}); */
 
 export default app;
