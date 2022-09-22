@@ -147,7 +147,7 @@ export const search = async (
   next: NextFunction
 ) => {
   const { keyword } = req.params;
-  console.log(keyword);
+
   if (keyword) {
     const videos = await Video.find({
       title: {

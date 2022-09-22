@@ -40,6 +40,6 @@ videoRouter.post(
   videoUploadFn,
   awsVideoUpload
 );
-videoRouter.post("/search/:keyword", search);
+videoRouter.get("/search/:keyword", search);
 
 export default videoRouter;
