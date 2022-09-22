@@ -33,8 +33,13 @@ videoRouter.post(
   deleteComment
 );
 
-videoRouter.post("/upload", upload);
-videoRouter.post("/awsUpload", videoUploadFn, awsVideoUpload);
+videoRouter.post("/upload", protectorMiddleware, upload);
+videoRouter.post(
+  "/awsUpload",
+  protectorMiddleware,
+  videoUploadFn,
+  awsVideoUpload
+);
 videoRouter.post("/search/:keyword", search);
 
 export default videoRouter;

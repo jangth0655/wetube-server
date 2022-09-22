@@ -37,11 +37,23 @@ const s3 = new S3Client({
   region: process.env.AWS_REGION,
 });
 
-const multerUpload = multerS3({
+const multerVideoUpload = multerS3({
   s3,
   bucket: "wetube-upload",
   key: function (req, file, cb) {
-    let uniqFileName = `upload/${file.mimetype.split("/")[0]}_${
+    let uniqFileName = `video/${file.mimetype.split("/")[0]}_${
+      req.session.user.username
+    }_${Date.now()}.*`;
+    cb(null, uniqFileName);
+  },
+  acl: "public-read",
+});
+
+const multerImageUpload = multerS3({
+  s3,
+  bucket: "wetube-upload",
+  key: function (req, file, cb) {
+    let uniqFileName = `avatar/${file.mimetype.split("/")[0]}_${
       req.session.user.username
     }_${Date.now()}.*`;
     cb(null, uniqFileName);
@@ -50,14 +62,14 @@ const multerUpload = multerS3({
 });
 
 const imageUpload = multer({
-  storage: multerUpload,
+  storage: multerImageUpload,
   limits: {
     fileSize: 10000000,
   },
 }).single("file");
 
 const videoUpload = multer({
-  storage: multerUpload,
+  storage: multerVideoUpload,
   limits: {
     fileSize: 10000000,
   },

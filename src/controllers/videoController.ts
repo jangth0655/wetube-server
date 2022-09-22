@@ -62,10 +62,11 @@ export const upload = async (
   next: NextFunction
 ) => {
   const {
-    body: { title, description, hashtags, file },
+    body: { title, description, hashtags, file, thumbnailURL },
     session: { user },
   } = req;
   const userId = user._id;
+
   try {
     const newVideo = await Video.create({
       url: file ? file : null,
@@ -73,6 +74,7 @@ export const upload = async (
       description,
       hashtags: Video.formatHashtags(hashtags) as any,
       createAt: Date.now(),
+      thumbnailURL,
       user: userId,
     });
     const user = await User.findById(userId);

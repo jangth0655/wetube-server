@@ -133,8 +133,6 @@ export const edit = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     if (avatarId && avatarId !== req.session.user.avatarId) {
-      console.log("avatarid", avatarId);
-      console.log("current", req.session.user.avatarId);
       if (req.session.user.avatarId) {
         await deleteToS3(req.session.user.avatarId);
       }
@@ -144,15 +142,19 @@ export const edit = async (req: Request, res: Response, next: NextFunction) => {
       req.session.user = updatedUser;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      _id,
-      {
-        name,
-        location,
-      },
-      { new: true }
-    );
-    req.session.user = updatedUser;
+    if (name || location) {
+      const updatedUser = await User.findByIdAndUpdate(
+        _id,
+        {
+          name,
+          location,
+        },
+        { new: true }
+      );
+
+      req.session.user = updatedUser;
+    }
+
     return res.status(201).json({ ok: true });
   } catch (e) {
     return res.status(400).json({ ok: false, error: `${e}` });
